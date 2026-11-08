@@ -1,0 +1,17 @@
+# Local builds (the ready-to-run Windows executable is retained).
+/StudentManagement
+/build/
+*.o
+*.pdb
+
+# Runtime data and reports; keep the original students.txt seed under Git.
+/students.csv
+/students.csv.bak
+/students.csv.tmp
+/students.csv.bak.tmp
+/students_backup.csv
+/student_report.csv
+
+# Python test cache.
+__pycache__/
+*.pyc
