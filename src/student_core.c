@@ -943,6 +943,44 @@ done:
     return 0;
 }
 
+int sms_import_legacy(Database *db, const char *path, size_t *added, size_t *skipped)
+{
+    Student *incoming, *merged;
+    size_t incoming_count = 0, merged_count = db->count, i;
+    *added = *skipped = 0;
+    incoming = malloc(MAX_STUDENTS * sizeof *incoming);
+    merged = malloc(MAX_STUDENTS * sizeof *merged);
+    if (incoming == NULL || merged == NULL) {
+        free(incoming); free(merged);
+        set_error("Not enough memory for legacy import.");
+        return 0;
+    }
+    if (!sms_load_legacy(path, incoming, &incoming_count)) goto fail;
+    memcpy(merged, db->entries, db->count * sizeof *merged);
+    for (i = 0; i < incoming_count; ++i) {
+        if (sms_duplicate_roll(merged, merged_count, incoming[i].roll)) {
+            ++*skipped;
+            continue;
+        }
+        if (merged_count >= MAX_STUDENTS) {
+            set_error("Legacy import would exceed %d students. No records were changed.", MAX_STUDENTS);
+            goto fail;
+        }
+        merged[merged_count++] = incoming[i];
+        ++*added;
+    }
+    if (*added > 0) {
+        if (!sms_save_records(db, merged, merged_count)) { *added = 0; goto fail; }
+        memcpy(db->entries, merged, merged_count * sizeof *db->entries);
+        db->count = merged_count;
+    }
+    free(incoming); free(merged);
+    return 1;
+fail:
+    free(incoming); free(merged);
+    return 0;
+}
+
 int sms_export_report(const Database *db, const char *path)
 {
     FILE *file;

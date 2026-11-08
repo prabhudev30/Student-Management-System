@@ -1,5 +1,6 @@
 #include "../src/student_core.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,7 +11,7 @@ static int join(char *out,size_t cap,const char *root,const char *name)
 
 int main(int argc,char **argv)
 {
-    Database db,migrated;Student s;Summary summary;size_t added,skipped;char path[1024],backup[1024],report[1024],legacy[1024],migrated_csv[1024];FILE *f;
+    Database db,migrated;Student s;Summary summary;size_t added,skipped;char path[1024],backup[1024],report[1024],legacy[1024],migrated_csv[1024],line[256];FILE *f;
     CHECK(argc==2,"test directory argument");sms_set_error_stream(NULL);memset(&db,0,sizeof db);
     CHECK(join(db.path,sizeof db.path,argv[1],"records.csv"),"path buffer");CHECK(join(db.backup_path,sizeof db.backup_path,argv[1],"records.bak"),"backup path");db.migrate_legacy=0;
     CHECK(sms_initialize_database(&db)&&db.count==0,"initialize empty database");
@@ -29,6 +30,8 @@ int main(int argc,char **argv)
     CHECK(join(report,sizeof report,argv[1],"report.csv"),"report path");CHECK(sms_export_report(&db,report),"CSV report export");
     CHECK(join(backup,sizeof backup,argv[1],"manual-backup.csv"),"backup path buffer");CHECK(sms_backup_database(&db,backup),"create backup");
     CHECK(sms_delete_student(&db,1)&&db.count==2,"delete record");CHECK(sms_restore_database(&db,backup)&&db.count==3,"validated restore");
+    CHECK(join(path,sizeof path,argv[1],"legacy-merge.txt"),"legacy merge path");f=fopen(path,"w");CHECK(f!=NULL,"create legacy merge source");fputs("2 Duplicate Existing 99\n4 New Legacy Student 76\n",f);CHECK(fclose(f)==0,"close legacy merge source");
+    CHECK(sms_import_legacy(&db,path,&added,&skipped)&&added==1&&skipped==1&&db.count==4,"safe additive legacy merge");CHECK(sms_find_roll(&db,4)!=SIZE_MAX,"new legacy roll retained");CHECK(db.entries[sms_find_roll(&db,2)].marks==39.5,"existing student data is not overwritten");f=fopen(path,"r");CHECK(f!=NULL,"legacy source remains readable");CHECK(fgets(line,sizeof line,f)!=NULL&&strcmp(line,"2 Duplicate Existing 99\n")==0,"legacy source content preserved");fclose(f);
     CHECK(join(legacy,sizeof legacy,argv[1],"students.txt"),"legacy path");f=fopen(legacy,"w");CHECK(f!=NULL,"create legacy seed");fputs("17 Niviya Selvan 83\n",f);CHECK(fclose(f)==0,"close legacy seed");
     memset(&migrated,0,sizeof migrated);CHECK(join(migrated.path,sizeof migrated.path,argv[1],"migration.csv"),"migration path");CHECK(join(migrated.backup_path,sizeof migrated.backup_path,argv[1],"migration.bak"),"migration backup path");strcpy(migrated.legacy_path,legacy);migrated.migrate_legacy=1;
     CHECK(sms_initialize_database(&migrated)&&migrated.count==1&&migrated.migrated_from_legacy,"legacy migration");CHECK(migrated.entries[0].roll==17&&sms_text_equal(migrated.entries[0].name,"Niviya Selvan"),"legacy student preserved");

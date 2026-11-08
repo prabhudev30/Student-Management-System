@@ -17,12 +17,12 @@ The GUI opens as a real Windows window with a dashboard, sidebar, searchable/sor
 
 ## GUI features
 
-- Dashboard statistics: enrolment, class average, passed/failed counts, high marks, and low-attendance count.
+- Responsive dashboard with aligned statistics cards, custom sidebar/actions, Segoe UI typography, and per-monitor DPI handling (100%, 125%, and 150% scaling).
 - Sidebar navigation for Dashboard, Students, and Rankings; table headings sort records, and the directory search matches roll, name, or class.
 - Add, edit, view, and confirmed delete forms; roll numbers are assigned automatically.
 - Automatic grade, pass/fail, and rankings; attendance recording and class/individual summary reporting.
 - CSV import/merge, report export, named backup, validated restore, and automatic save backups.
-- Existing `students.csv` records are copied into the user-data folder only when that destination does not already exist. The source file remains untouched. If no CSV exists, a legacy `students.txt` is migrated without deleting or changing it.
+- Existing `students.csv` records are copied into the user-data folder only when that destination does not already exist. If the user-data database already exists and a console/legacy source is found beside the app, the GUI offers a one-time additive merge: new roll numbers are added, existing rolls are never overwritten, and source files are preserved. If no local source is found, a one-time prompt can open a file picker for a console CSV in another folder. This recovers console records missing from an older GUI database without re-importing them on every launch. If no CSV exists, a legacy `students.txt` is migrated without deleting or changing it.
 - Offline local storage in the Windows user profile; no external service or network access.
 
 ## Build on Windows (MinGW-w64)
@@ -113,7 +113,7 @@ With GCC and Python 3 installed:
 make test
 ```
 
-The suite exercises all 28 original console tests plus shared-core operations: CRUD, attendance, grades/statistics, import/export, backup/restore, and legacy migration. Tests use isolated temporary directories and do not modify the included student data.
+`make test` currently runs 31 tests: all 28 original console tests, shared-core CRUD/attendance/CSV/backup/restore/legacy-merge operations, and two source-level GUI regression checks for DPI, layout hooks, Unicode handling, and additive migration. Static GUI checks are not a substitute for Windows runtime testing. Tests use isolated temporary directories and do not modify the included student data.
 
 ## Project files
 

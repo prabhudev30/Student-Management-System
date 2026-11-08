@@ -87,6 +87,7 @@ int sms_mark_attendance(Database *db, int roll, int present);
 int sms_mark_class_attendance_csv(Database *db, const char *class_name, const char *absent_list,
                                   size_t *marked, size_t *present_count);
 int sms_import_csv(Database *db, const char *path, size_t *added, size_t *skipped);
+int sms_import_legacy(Database *db, const char *path, size_t *added, size_t *skipped);
 int sms_export_report(const Database *db, const char *path);
 int sms_backup_database(const Database *db, const char *path);
 int sms_restore_database(Database *db, const char *path);

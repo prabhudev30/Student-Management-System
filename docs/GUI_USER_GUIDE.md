@@ -4,11 +4,11 @@
 
 On Windows, extract the full project/Windows ZIP and double-click `START_GUI_WINDOWS.bat`. The graphical app is `StudentManagementGUI.exe`; it is separate from the retained console executable. No internet connection is used.
 
-The live database, automatic save backup, and migration target are stored in `%APPDATA%\StudentManagementSystem`. The app checks the executable's folder for an existing `students.csv` or legacy `students.txt` only when no user-data CSV exists. Existing sources are copied/migrated without being deleted or replaced. The source files are protected from CSV export and manual backup overwrite.
+The live database, automatic save backup, and migration target are stored in `%APPDATA%\StudentManagementSystem`. The app checks the executable's folder for an existing `students.csv` or legacy `students.txt`. If no user-data CSV exists, it copies/migrates the source without deleting it. If a database already exists, the app may offer a one-time additive merge: missing roll numbers are added, existing student rows are never overwritten, and a migration marker prevents old rows from being re-imported after later deletions. If the source is stored in another folder, the one-time startup prompt can browse to that console CSV for the same safe additive merge. The original source files are protected from CSV export and manual backup overwrite.
 
 ## Main areas
 
-- **Dashboard:** total students, class average, pass/fail totals, highest marks, and low-attendance count.
+- **Dashboard:** aligned cards show total students, class average, pass rate, highest marks, and low-attendance count. The responsive layout and typography scale with Windows DPI changes (including 100%, 125%, and 150% settings).
 - **Students:** type in the search field to filter by name, class, or roll. Click table headings to sort. `Rank` uses competition ranking (ties share a rank and subsequent rank positions are skipped).
 - **Rankings:** the same table ordered by marks from highest to lowest.
 - **Academic report:** use the Report button for class totals and summary statistics.
