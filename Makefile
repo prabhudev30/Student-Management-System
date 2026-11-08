@@ -5,26 +5,39 @@ CFLAGS ?= -std=c11 -O2 -Wall -Wextra -Wpedantic
 PYTHON ?= python3
 
 ifeq ($(OS),Windows_NT)
-TARGET := StudentManagement.exe
-RUN := .\$(TARGET)
-CLEAN := -del /Q $(TARGET) 2>NUL
+CONSOLE := StudentManagement.exe
+GUI := StudentManagementGUI.exe
+RUN := .\\$(CONSOLE)
+CLEAN := -del /Q StudentManagement.exe StudentManagementGUI.exe gui-resource.o 2>NUL
 else
-TARGET := StudentManagement
-RUN := ./$(TARGET)
-CLEAN := rm -f $(TARGET)
+CONSOLE := StudentManagement
+GUI := StudentManagementGUI.exe
+RUN := ./$(CONSOLE)
+CLEAN := rm -f StudentManagement StudentManagement.exe StudentManagementGUI.exe; rm -rf build
 endif
 
-.PHONY: all run test clean
-all: $(TARGET)
+.PHONY: all run test clean windows windows-cross
+all: $(CONSOLE)
 
-$(TARGET): main.c
-	$(CC) $(CFLAGS) main.c -o $(TARGET)
+$(CONSOLE): main.c src/student_core.c src/student_core.h
+	$(CC) $(CFLAGS) main.c src/student_core.c -o $(CONSOLE)
 
-run: $(TARGET)
+gui-resource.o: gui/app.rc gui/app.manifest
+	windres gui/app.rc -O coff -o gui-resource.o
+
+$(GUI): gui/win32_main.c src/student_core.c src/student_core.h gui-resource.o
+	$(CC) $(CFLAGS) -D_WIN32_WINNT=0x0601 -I src -mwindows gui/win32_main.c src/student_core.c gui-resource.o -o $(GUI) -lcomctl32 -lcomdlg32 -lshell32 -lgdi32 -lole32
+
+windows: $(CONSOLE) $(GUI)
+
+windows-cross:
+	sh scripts/build_windows.sh
+
+run: $(CONSOLE)
 	$(RUN)
 
-test: $(TARGET)
-	$(PYTHON) -m unittest discover -s tests -v
+test: $(CONSOLE)
+	STUDENT_BINARY=$(CONSOLE) $(PYTHON) -m unittest discover -s tests -v
 
 clean:
 	$(CLEAN)

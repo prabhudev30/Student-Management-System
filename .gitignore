@@ -12,6 +12,7 @@
 /students_backup.csv
 /student_report.csv
 
-# Python test cache.
+# Python test cache and generated release archive.
 __pycache__/
 *.pyc
+/Student-Management-System-Windows.zip
